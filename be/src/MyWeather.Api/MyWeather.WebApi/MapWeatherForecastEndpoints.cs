@@ -12,14 +12,14 @@ public static class MapWeatherForecastEndpoints
         var groupBuilder = app.MapGroup("/weathers")
             .WithTags("Weathers");
 
-        groupBuilder.MapGet("/{cityId:int}", async (ISender sender, [AsParameters] GetWeatherByCityIdQueryDto query, CancellationToken cancellationToken) =>
-                await GetWeatherForecastByCityIdAsync(sender, query, cancellationToken)
-        ).WithValidationFilter<GetWeatherByCityIdQueryDto>();
+        groupBuilder.MapGet("/{cityName}", async (ISender sender, [AsParameters] GetWeatherByCityNameQueryDto query, CancellationToken cancellationToken) =>
+                await GetWeatherForecastByCityNameAsync(sender, query, cancellationToken)
+        ).WithValidationFilter<GetWeatherByCityNameQueryDto>();
 
         return app;
     }
 
-    private static async Task<IResult> GetWeatherForecastByCityIdAsync(ISender sender, GetWeatherByCityIdQueryDto query, CancellationToken cancellationToken)
+    private static async Task<IResult> GetWeatherForecastByCityNameAsync(ISender sender, GetWeatherByCityNameQueryDto query, CancellationToken cancellationToken)
     {
         var response = await sender.Send(query, cancellationToken);
 
