@@ -1,6 +1,6 @@
 namespace MyWeather.Application.WeatherForecasts.Queries;
 
-public record GetWeatherByCityIdResponseDto(
+public record GetWeatherByCityNameResponseDto(
     int CityId,
     string CityName,
     string Country,

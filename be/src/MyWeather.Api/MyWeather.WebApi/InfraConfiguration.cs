@@ -15,7 +15,7 @@ public static class InfraConfiguration
         
     
         // Add other services and configurations as needed
-        var applicationAssembly = typeof(GetWeatherByCityIdQueryDto).Assembly;
+        var applicationAssembly = typeof(GetWeatherByCityNameQueryDto).Assembly;
         services.AddValidatorsFromAssembly(applicationAssembly);
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(applicationAssembly));
         // services.AddHttpClient<OpenWeatherClient>(client =>

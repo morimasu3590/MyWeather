@@ -23,6 +23,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapWeatherForecastEndpoints();
+app.MapCountriesEndpointBuilder();
+app.MapWeatherForecastEndpointBuilder();
 app.Run();
 

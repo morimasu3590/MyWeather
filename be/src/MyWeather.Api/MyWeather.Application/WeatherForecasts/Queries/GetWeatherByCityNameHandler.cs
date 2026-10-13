@@ -2,14 +2,14 @@ using MediatR;
 
 namespace MyWeather.Application.WeatherForecasts.Queries;
 
-public class GetWeatherByCityIdHandler : IRequestHandler<GetWeatherByCityIdQueryDto, GetWeatherByCityIdResponseDto?>
+public class GetWeatherByCityNameHandler : IRequestHandler<GetWeatherByCityNameQueryDto, GetWeatherByCityNameResponseDto?>
 {
-    public async Task<GetWeatherByCityIdResponseDto?> Handle(GetWeatherByCityIdQueryDto request, CancellationToken cancellationToken)
+    public async Task<GetWeatherByCityNameResponseDto?> Handle(GetWeatherByCityNameQueryDto request, CancellationToken cancellationToken)
     {
-        // Simulate fetching weather data for the given cityId
-        var response = new GetWeatherByCityIdResponseDto(
-            CityId: request.cityId,
-            CityName: "Sample City",
+        // Simulate fetching weather data for the given cityName
+        var response = new GetWeatherByCityNameResponseDto(
+            CityId: 1,
+            CityName: request.cityName,
             Country: "Sample Country",
             TimeUtc: DateTime.UtcNow.ToString("o"),
             WindSpeed: 5.0,
