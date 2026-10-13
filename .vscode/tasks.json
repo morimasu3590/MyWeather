@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "options": { "cwd": "${workspaceFolder}/be/MyWeather.Api" },
+  "options": { "cwd": "${workspaceFolder}/be/src/MyWeather.Api" },
   "tasks": [
     {
       "label": "build",

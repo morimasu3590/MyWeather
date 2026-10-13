@@ -6,8 +6,8 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/be/MyWeather.Api/MyWeather.WebApi/bin/Debug/net10.0/MyWeather.WebApi.dll",
-      "cwd": "${workspaceFolder}/be/MyWeather.Api/MyWeather.WebApi",
+      "program": "${workspaceFolder}/be/src/MyWeather.Api/MyWeather.WebApi/bin/Debug/net10.0/MyWeather.WebApi.dll",
+      "cwd": "${workspaceFolder}/be/src/MyWeather.Api/MyWeather.WebApi",
       "stopAtEntry": false,
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
