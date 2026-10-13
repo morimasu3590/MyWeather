@@ -4,7 +4,7 @@ using Scalar.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-InfraConfiguration.ConfigureServices(builder.Services, builder.Configuration);
+InfraConfiguration.ConfigureServices(builder.Services, builder.Configuration, builder.Environment.ContentRootPath);
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
