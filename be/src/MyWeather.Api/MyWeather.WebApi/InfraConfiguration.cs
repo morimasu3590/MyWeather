@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using MyWeather.DAL;
 using FluentValidation;
@@ -7,11 +8,15 @@ namespace MyWeather.WebApi;
 
 public static class InfraConfiguration
 {
-    public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    public static void ConfigureServices(IServiceCollection services, IConfiguration configuration, string contentRootPath)
     {
         // Database configuration
+        // The SQLite file lives in the repo root, four levels above the WebApi project folder.
+        var connectionString = new SqliteConnectionStringBuilder(configuration.GetConnectionString("DefaultConnection"));
+        connectionString.DataSource = Path.GetFullPath(
+            Path.Combine(contentRootPath, "..", "..", "..", "..", connectionString.DataSource));
         services.AddDbContext<MyWeatherDbContext>(options =>
-            options.UseSqlite(configuration.GetConnectionString("DefaultConnection")));
+            options.UseSqlite(connectionString.ToString()));
         
     
         // Add other services and configurations as needed
