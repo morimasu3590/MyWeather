@@ -3,10 +3,10 @@ using MyWeather.Application.WeatherForecasts.Queries;
 
 namespace MyWeather.WebApi;
 
-public static class MapWeatherForeacastEndpoints
+public static class MapWeatherForecastEndpoints
 {
 
-    public static IEndpointRouteBuilder MapWeatherForecastEndpoints(this IEndpointRouteBuilder app)
+    public static IEndpointRouteBuilder MapWeatherForecastEndpointBuilder(this IEndpointRouteBuilder app)
     {
 
         var groupBuilder = app.MapGroup("/weathers")
