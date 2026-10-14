@@ -8,6 +8,15 @@ public class FakeFavoriteCityRepository(IReadOnlyList<FavoriteCityModel> favorit
     public CancellationToken? ReceivedCancellationToken { get; private set; }
     public List<FavoriteCityModel> Added { get; } = [];
 
+    public int? ReceivedId { get; private set; }
+
+    public Task<FavoriteCityModel?> GetById(int id, CancellationToken cancellation = default)
+    {
+        ReceivedId = id;
+        ReceivedCancellationToken = cancellation;
+        return Task.FromResult(favoriteCities.FirstOrDefault(f => f.Id == id));
+    }
+
     public Task<IReadOnlyList<FavoriteCityModel>> GetAllFavoriteCitiesAsync(CancellationToken cancellationToken = default)
     {
         ReceivedCancellationToken = cancellationToken;

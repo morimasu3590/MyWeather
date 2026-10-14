@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <Folder Include="Cities\Queries\" />
-    <Folder Include="FavoriteCity\Queries\" />
   </ItemGroup>
 
 </Project>

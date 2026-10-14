@@ -13,16 +13,18 @@ public static class MapWeatherForecastEndpoints
             .WithTags("Weathers");
 
         groupBuilder.MapGet("/{cityName}", async (ISender sender, [AsParameters] GetWeatherByCityNameQueryDto query, CancellationToken cancellationToken) =>
-                await GetWeatherForecastByCityNameAsync(sender, query, cancellationToken)
-        ).WithValidationFilter<GetWeatherByCityNameQueryDto>();
+        {
+            var response = await sender.Send(query, cancellationToken);
+            return response is not null ? Results.Ok(response) : Results.NotFound();            
+        }).WithValidationFilter<GetWeatherByCityNameQueryDto>();
 
+        groupBuilder.MapGet(pattern: "/{cityId}:int",
+            async (ISender sender, [AsParameters] GetWeatherByCityIdQueryDto query,
+                CancellationToken cancellationToken) =>
+            {
+                var response = await sender.Send(query, cancellationToken);
+                return response is not null ? Results.Ok(response) : Results.NotFound();
+            });
         return app;
-    }
-
-    private static async Task<IResult> GetWeatherForecastByCityNameAsync(ISender sender, GetWeatherByCityNameQueryDto query, CancellationToken cancellationToken)
-    {
-        var response = await sender.Send(query, cancellationToken);
-
-        return response is not null ? Results.Ok(response) : Results.NotFound();
     }
 }

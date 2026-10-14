@@ -68,6 +68,37 @@ public class FavoriteCityRepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task GetById_ReturnsFavoriteWithCityAndCountry()
+    {
+        int tokyoFavoriteId;
+        using (var seed = _factory.CreateContext())
+        {
+            var oslo = new FavoriteCity { Notes = "first", City = new City { Name = "Oslo", Country = new Country { Name = "Norway", Code = "NO" } } };
+            var tokyo = new FavoriteCity { Notes = "second", City = new City { Name = "Tokyo", Country = new Country { Name = "Japan", Code = "JP" } } };
+            seed.FavoriteCities.AddRange(oslo, tokyo);
+            await seed.SaveChangesAsync();
+            tokyoFavoriteId = tokyo.Id;
+        }
+
+        using var context = _factory.CreateContext();
+        var result = await new FavoriteCityRepository(context).GetById(tokyoFavoriteId);
+
+        Assert.NotNull(result);
+        Assert.Equal(tokyoFavoriteId, result.Id);
+        Assert.Equal("second", result.Notes);
+        Assert.Equal("Tokyo", result.City.Name);
+        Assert.Equal("Japan", result.City.Country.Name);
+    }
+
+    [Fact]
+    public async Task GetById_ReturnsNullWhenFavoriteDoesNotExist()
+    {
+        using var context = _factory.CreateContext();
+
+        Assert.Null(await new FavoriteCityRepository(context).GetById(999));
+    }
+
+    [Fact]
     public async Task AddFavoriteCityAsync_ThrowsWhenCityDoesNotExist()
     {
         using var context = _factory.CreateContext();
