@@ -1,6 +1,6 @@
 using MyWeather.Domain.Common;
 
-namespace MyWeather.DAL.Tests;
+namespace MyWeather.Domain.Tests;
 
 public class TemperatureConverterTests
 {

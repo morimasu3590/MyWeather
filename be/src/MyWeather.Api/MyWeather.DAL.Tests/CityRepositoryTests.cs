@@ -43,4 +43,20 @@ public class CityRepositoryTests : IDisposable
 
         Assert.Empty(result);
     }
+
+    [Fact]
+    public async Task GetCitiesByCountryCodeAsync_LoadsCountryOfEachCity()
+    {
+        using (var seed = _factory.CreateContext())
+        {
+            seed.Cities.Add(new City { Name = "Oslo", Country = new Country { Name = "Norway", Code = "NO" } });
+            await seed.SaveChangesAsync();
+        }
+
+        using var context = _factory.CreateContext();
+        var result = await new CityRepository(context).GetCitiesByCountryCodeAsync("NO");
+
+        var city = Assert.Single(result);
+        Assert.Equal("Norway", city.Country.Name);
+    }
 }

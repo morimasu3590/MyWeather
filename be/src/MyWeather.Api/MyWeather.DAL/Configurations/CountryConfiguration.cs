@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using MyWeather.DAL.Seed;
 using MyWeather.Domain.Model;
 
 namespace MyWeather.DAL.Configurations;
@@ -19,5 +20,7 @@ public class CountryConfiguration : IEntityTypeConfiguration<Country>
             .HasMaxLength(3);
 
         builder.HasIndex(c => c.Code).IsUnique();
+
+        builder.HasData(CountrySeed.Data);
     }
 }
