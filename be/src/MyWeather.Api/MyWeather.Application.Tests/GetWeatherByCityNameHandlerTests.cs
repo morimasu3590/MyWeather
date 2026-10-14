@@ -68,6 +68,31 @@ public class GetWeatherByCityNameHandlerTests
     }
 
     [Fact]
+    public async Task Handle_TreatsUnspecifiedKindDateAsUtc()
+    {
+        var weather = NewWeather();
+        weather.Date = new DateTime(2026, 3, 4, 12, 30, 45, DateTimeKind.Unspecified);
+        var handler = new GetWeatherByCityNameHandler(new FakeWeatherRepository(weather));
+
+        var result = await handler.Handle(new GetWeatherByCityNameQueryDto("Oslo"), CancellationToken.None);
+
+        Assert.Equal("2026-03-04T12:30:45Z", result!.TimeUtc);
+    }
+
+    [Fact]
+    public async Task Handle_ConvertsLocalKindDateToUtc()
+    {
+        var local = new DateTime(2026, 3, 4, 12, 30, 45, DateTimeKind.Local);
+        var weather = NewWeather();
+        weather.Date = local;
+        var handler = new GetWeatherByCityNameHandler(new FakeWeatherRepository(weather));
+
+        var result = await handler.Handle(new GetWeatherByCityNameQueryDto("Oslo"), CancellationToken.None);
+
+        Assert.Equal(local.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ", System.Globalization.CultureInfo.InvariantCulture), result!.TimeUtc);
+    }
+
+    [Fact]
     public async Task Handle_PassesCityNameAndCancellationTokenToRepository()
     {
         var repository = new FakeWeatherRepository(NewWeather());

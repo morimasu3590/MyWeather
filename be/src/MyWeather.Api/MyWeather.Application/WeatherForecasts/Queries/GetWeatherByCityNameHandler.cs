@@ -15,7 +15,7 @@ public class GetWeatherByCityNameHandler(IWeatherRepository weatherRepository) :
             response.CityId,
             response.City.Name,
             response.City.Country.Name,
-            response.Date.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
+            ToUtc(response.Date).ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
             response.WindSpeed,
             response.WindDirection,
             response.Visibility,
@@ -27,4 +27,13 @@ public class GetWeatherByCityNameHandler(IWeatherRepository weatherRepository) :
             response.DewPoint,
             response.WeatherDescription) : null;
     }
+
+    // SQLite returns DateTime values with Kind=Unspecified. Weather dates are stored in UTC, so
+    // an Unspecified value is tagged as UTC instead of being shifted by the server's local offset.
+    private static DateTime ToUtc(DateTime date) => date.Kind switch
+    {
+        DateTimeKind.Local => date.ToUniversalTime(),
+        DateTimeKind.Unspecified => DateTime.SpecifyKind(date, DateTimeKind.Utc),
+        _ => date
+    };
 }
