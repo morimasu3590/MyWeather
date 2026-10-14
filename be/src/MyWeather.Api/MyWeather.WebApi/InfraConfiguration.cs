@@ -5,6 +5,7 @@ using MyWeather.DAL.Repositories;
 using MyWeather.Domain.Repositories;
 using FluentValidation;
 using MyWeather.Application.WeatherForecasts.Queries;
+using MyWeather.Infrastructure.OpenWeatherMap;
 
 namespace MyWeather.WebApi;
 
@@ -27,11 +28,11 @@ public static class InfraConfiguration
         var applicationAssembly = typeof(GetWeatherByCityNameQueryDto).Assembly;
         services.AddValidatorsFromAssembly(applicationAssembly);
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(applicationAssembly));
-        // services.AddHttpClient<OpenWeatherClient>(client =>
-        // {
-        //     client.BaseAddress = new Uri("https://api.openweathermap.org/data/2.5/");
-        //     client.Timeout = TimeSpan.FromSeconds(10);
-        // });
+        services.AddHttpClient<OpenWeatherMapClient>(client =>
+        {
+            client.BaseAddress = new Uri("https://api.openweathermap.org");
+            client.Timeout = TimeSpan.FromSeconds(10);
+        }).AddStandardResilienceHandler();
     }
 
     // A relative DataSource is resolved against the repository root (first parent folder containing
