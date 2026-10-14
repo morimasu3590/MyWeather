@@ -22,6 +22,7 @@ public class CityRepository : ICityRepository
 
         return await _context.Cities
             .AsNoTracking()
+            .Include(c => c.Country)
             .Where(c => c.Country.Code.ToLower().Equals(countryCode.ToLower()))
             .OrderBy(c => c.Name)
             .ToListAsync(cancellationToken);

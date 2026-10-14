@@ -7,7 +7,7 @@ public sealed class TestDbContextFactory : IDisposable
 {
     private readonly SqliteConnection _connection;
 
-    public TestDbContextFactory()
+    public TestDbContextFactory(bool keepSeedData = false)
     {
         // The in-memory database lives only as long as the connection stays open.
         _connection = new SqliteConnection("Data Source=:memory:");
@@ -15,6 +15,13 @@ public sealed class TestDbContextFactory : IDisposable
 
         using var context = CreateContext();
         context.Database.EnsureCreated();
+
+        if (!keepSeedData)
+        {
+            // The model seeds countries and cities; most tests start from empty tables.
+            context.Cities.ExecuteDelete();
+            context.Countries.ExecuteDelete();
+        }
     }
 
     public MyWeatherDbContext CreateContext()
