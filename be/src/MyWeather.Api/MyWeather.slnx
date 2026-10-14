@@ -6,5 +6,6 @@
   <Project Path="MyWeather.Domain.Tests/MyWeather.Domain.Tests.csproj" />
   <Project Path="MyWeather.Domain/MyWeather.Domain.csproj" />
   <Project Path="MyWeather.Infrastructure/MyWeather.Infrastructure.csproj" />
+  <Project Path="MyWeather.WebApi.Tests/MyWeather.WebApi.Tests.csproj" />
   <Project Path="MyWeather.WebApi/MyWeather.WebApi.csproj" />
 </Solution>

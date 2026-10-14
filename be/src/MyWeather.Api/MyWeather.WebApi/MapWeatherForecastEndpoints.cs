@@ -18,13 +18,13 @@ public static class MapWeatherForecastEndpoints
             return response is not null ? Results.Ok(response) : Results.NotFound();            
         }).WithValidationFilter<GetWeatherByCityNameQueryDto>();
 
-        groupBuilder.MapGet(pattern: "/{cityId}:int",
+        groupBuilder.MapGet(pattern: "/{cityId:int}",
             async (ISender sender, [AsParameters] GetWeatherByCityIdQueryDto query,
                 CancellationToken cancellationToken) =>
             {
                 var response = await sender.Send(query, cancellationToken);
                 return response is not null ? Results.Ok(response) : Results.NotFound();
-            });
+            }).WithValidationFilter<GetWeatherByCityIdQueryDto>();
         return app;
     }
 }
