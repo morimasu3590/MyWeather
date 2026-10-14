@@ -12,6 +12,7 @@ public class MyWeatherDbContext : DbContext
     public DbSet<Country> Countries => Set<Country>();
     public DbSet<City> Cities => Set<City>();
     public DbSet<Weather> WeatherRecords => Set<Weather>();
+    public DbSet<FavoriteCity> FavoriteCities => Set<FavoriteCity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
