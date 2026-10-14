@@ -34,5 +34,7 @@ app.UseHttpsRedirection();
 
 app.MapCountriesEndpointBuilder();
 app.MapWeatherForecastEndpointBuilder();
+app.MapFavoriteCitiesEndpointBuilder();
+
 app.Run();
 
