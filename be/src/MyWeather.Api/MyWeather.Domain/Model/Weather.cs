@@ -1,3 +1,4 @@
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -14,10 +15,11 @@ public class Weather
     public DateTime Date { get; set; } 
     public double WindSpeed { get; set; }
     public double WindDirection { get; set; }
-    public double Temperature { get; set; }
+    public double TemperatureInC { get; set; } 
     public double DewPoint { get; set; }
     public double Humidity { get; set; }
     public double Pressure { get; set; }
     public double Visibility { get; set; }
     public EnumCloudiness Cloudiness { get; set; }
+    public string WeatherDescription { get; set; } = string.Empty;
 }

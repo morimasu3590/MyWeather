@@ -1,6 +1,8 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using MyWeather.DAL;
+using MyWeather.DAL.Repositories;
+using MyWeather.Domain.Repositories;
 using FluentValidation;
 using MyWeather.Application.WeatherForecasts.Queries;
 
@@ -17,6 +19,10 @@ public static class InfraConfiguration
             Path.Combine(contentRootPath, "..", "..", "..", "..", connectionString.DataSource));
         services.AddDbContext<MyWeatherDbContext>(options =>
             options.UseSqlite(connectionString.ToString()));
+
+        services.AddScoped<ICountryRepository, CountryRepository>();
+        services.AddScoped<ICityRepository, CityRepository>();
+        services.AddScoped<IWeatherRepository, WeatherRepository>();
         
     
         // Add other services and configurations as needed
