@@ -14,4 +14,9 @@ public class FakeCityRepository(IReadOnlyList<City> cities) : ICityRepository
         ReceivedCancellationToken = cancellationToken;
         return Task.FromResult(cities);
     }
+
+    public Task<City?> GetCityByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(cities.FirstOrDefault(c => c.Id == id));
+    }
 }

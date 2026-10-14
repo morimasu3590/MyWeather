@@ -20,6 +20,7 @@ public static class InfraConfiguration
         services.AddScoped<ICountryRepository, CountryRepository>();
         services.AddScoped<ICityRepository, CityRepository>();
         services.AddScoped<IWeatherRepository, WeatherRepository>();
+        services.AddScoped<IFavoriteCityRepository, FavoriteCityRepository>();
         
     
         // Add other services and configurations as needed

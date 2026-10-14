@@ -92,4 +92,64 @@ public class WeatherRepositoryTests : IDisposable
         Assert.Equal(DateTimeKind.Utc, fromUnspecified!.Date.Kind);
         Assert.Equal(new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc), fromUnspecified.Date);
     }
+
+    private async Task<(int OsloId, int BergenId, int TokyoId)> SeedThreeCitiesAsync()
+    {
+        using var seed = _factory.CreateContext();
+        var norway = new Country { Name = "Norway", Code = "NO" };
+        var oslo = new City { Name = "Oslo", Country = norway };
+        var bergen = new City { Name = "Bergen", Country = norway };
+        var tokyo = new City { Name = "Tokyo", Country = new Country { Name = "Japan", Code = "JP" } };
+        seed.WeatherRecords.AddRange(
+            NewWeather(oslo, new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)),
+            NewWeather(bergen, new DateTime(2026, 1, 2, 0, 0, 0, DateTimeKind.Utc)),
+            NewWeather(tokyo, new DateTime(2026, 1, 3, 0, 0, 0, DateTimeKind.Utc)));
+        await seed.SaveChangesAsync();
+        return (oslo.Id, bergen.Id, tokyo.Id);
+    }
+
+    [Fact]
+    public async Task GetWeatherByCityIdsAsync_ReturnsOnlyRecordsOfRequestedCitiesNewestFirst()
+    {
+        var (osloId, bergenId, _) = await SeedThreeCitiesAsync();
+
+        using var context = _factory.CreateContext();
+        var result = await new WeatherRepository(context).GetWeatherByCityIdsAsync([osloId, bergenId]);
+
+        Assert.Equal(new[] { "Bergen", "Oslo" }, result.Select(w => w.City.Name));
+        Assert.All(result, w => Assert.NotNull(w.City.Country));
+    }
+
+    [Fact]
+    public async Task GetWeatherByCityIdsAsync_IgnoresDuplicateIds()
+    {
+        var (osloId, _, _) = await SeedThreeCitiesAsync();
+
+        using var context = _factory.CreateContext();
+        var result = await new WeatherRepository(context).GetWeatherByCityIdsAsync([osloId, osloId]);
+
+        Assert.Single(result);
+    }
+
+    [Fact]
+    public async Task GetWeatherByCityIdsAsync_AcceptsLazySequence()
+    {
+        var (osloId, _, tokyoId) = await SeedThreeCitiesAsync();
+        IEnumerable<int> Lazy() { yield return osloId; yield return tokyoId; }
+
+        using var context = _factory.CreateContext();
+        var result = await new WeatherRepository(context).GetWeatherByCityIdsAsync(Lazy());
+
+        Assert.Equal(2, result.Count);
+    }
+
+    [Fact]
+    public async Task GetWeatherByCityIdsAsync_ReturnsEmptyListForNoIds()
+    {
+        using var context = _factory.CreateContext();
+
+        var result = await new WeatherRepository(context).GetWeatherByCityIdsAsync([]);
+
+        Assert.Empty(result);
+    }
 }

@@ -13,6 +13,14 @@ public class CityRepository : ICityRepository
         _context = context;
     }
 
+    public async Task<City?> GetCityByIdAsync(int cityId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Cities
+            .AsNoTracking()
+            .Include(c => c.Country)
+            .FirstOrDefaultAsync(c => c.Id == cityId, cancellationToken);
+    }
+    
     public async Task<IReadOnlyList<City>> GetCitiesByCountryCodeAsync(string countryCode, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(countryCode))
