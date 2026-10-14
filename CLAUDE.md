@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-MyWeather ("get weather data by locations") is early-stage. The backend is a .NET 10 solution scaffold; `fe/` is an empty placeholder for a future frontend, and there are no tests.
+MyWeather ("get weather data by locations") is early-stage. The backend is a .NET 10 solution in `be/`; `fe/` is a Vite + React + TypeScript frontend built from the "Weather Favorites" Claude Design project.
 
 ## Layout
 
@@ -26,7 +26,22 @@ dotnet ef migrations add <Name> --project MyWeather.DAL --startup-project MyWeat
 
 `.vscode/` has matching tasks (`build`, `build-webapi`, `watch`, `test`) and an F5 launch config for `MyWeather.WebApi`. The launch config hardcodes `bin/Debug/net10.0`, so update it if the target framework changes. OpenAPI is mapped only in the Development environment. In Development the app applies pending EF migrations on startup (`Database.Migrate()`); other environments run `dotnet ef database update`.
 
-## Branches
+## Frontend
+
+Run from `fe/` (Node comes from asdf; if a shell can't find `node`, put `~/.asdf/shims` on PATH, but not ahead of the system `dotnet`):
+
+```
+npm install
+npm run dev     # http://localhost:5173, proxies /api/* to the API on https://localhost:7057 (https profile)
+npm test        # Vitest + Testing Library
+npm run build   # tsc + vite build
+npm run lint    # oxlint
+```
+
+- Styling comes only from `src/styles/industry.css` (the design system's tokens and classes, copied verbatim) plus `src/styles/app.css` for layout. Use the `var(--*)` tokens rather than new hex values or fonts.
+- Favorites are kept in browser `localStorage` because the API has no favorites endpoints yet. Hourly, 7-day, high/low, feels-like, air quality and sunrise/sunset are generated placeholders (`src/lib/sample.ts`) shown with a "Sample" tag, since the API returns current conditions only.
+
+
 
 - Do all work on a feature branch created from `develop`.
 - Feature branches are merged/pushed into `develop` only (PR targeting `develop`).
