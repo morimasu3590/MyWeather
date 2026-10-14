@@ -1,3 +1,4 @@
+using MyWeather.DAL;
 using MyWeather.WebApi;
 using Scalar.AspNetCore;
 
@@ -10,6 +11,13 @@ InfraConfiguration.ConfigureServices(builder.Services, builder.Configuration, bu
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    // No migrations yet: create the schema on first run.
+    using var scope = app.Services.CreateScope();
+    scope.ServiceProvider.GetRequiredService<MyWeatherDbContext>().Database.EnsureCreated();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
