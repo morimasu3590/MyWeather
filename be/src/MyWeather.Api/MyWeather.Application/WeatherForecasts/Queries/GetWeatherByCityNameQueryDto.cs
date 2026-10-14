@@ -3,17 +3,21 @@ using MediatR;
 
 namespace MyWeather.Application.WeatherForecasts.Queries;
 
-public record GetWeatherByCityNameQueryDto(string cityName) : IRequest<GetWeatherByCityNameResponseDto?>;
+public record GetWeatherByCityNameQueryDto(string CityName) : IRequest<GetWeatherByCityNameResponseDto?>;
 
 public class GetWeatherByCityNameQueryDtoValidator : AbstractValidator<GetWeatherByCityNameQueryDto>
 {
     public GetWeatherByCityNameQueryDtoValidator()
     {
-        RuleFor(x => x.cityName).Must(NotContainNumbersOrSpaces).WithMessage("City name cannot contain numbers or special characters.");
+        RuleFor(x => x.CityName)
+            .Must(BeValidCityName)
+            .WithMessage("City name can only contain letters, spaces, hyphens, apostrophes and periods.");
     }
 
-    private bool NotContainNumbersOrSpaces(string cityName)
+    private static bool BeValidCityName(string? cityName)
     {
-        return !cityName.Any(char.IsDigit) && !string.IsNullOrWhiteSpace(cityName);
+        return !string.IsNullOrWhiteSpace(cityName) && cityName.All(IsAllowedCharacter);
     }
+
+    private static bool IsAllowedCharacter(char c) => char.IsLetter(c) || c is ' ' or '-' or '\'' or '.';
 }

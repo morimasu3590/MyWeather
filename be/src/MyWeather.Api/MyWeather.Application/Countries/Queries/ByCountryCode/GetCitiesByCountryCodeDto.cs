@@ -7,12 +7,13 @@ public record GetCitiesByCountryCodeDto(
     string CountryCode
 ) : IRequest<IReadOnlyList<GetCitiesByCountryCodeResponseDto>?>;
     
-public class GetCountriesByCountryCodeDtoValidator : AbstractValidator<GetCitiesByCountryCodeDto>
+public class GetCitiesByCountryCodeDtoValidator : AbstractValidator<GetCitiesByCountryCodeDto>
 {
-    public GetCountriesByCountryCodeDtoValidator()
+    public GetCitiesByCountryCodeDtoValidator()
     {
         RuleFor(x => x.CountryCode)
             .NotEmpty().WithMessage("Country code is required.")
-            .Length(2).WithMessage("Country code must be 2 characters long.");
+            .Length(2).WithMessage("Country code must be 2 characters long.")
+            .Must(code => code.All(char.IsAsciiLetter)).WithMessage("Country code must contain only letters.");
     }
 }
