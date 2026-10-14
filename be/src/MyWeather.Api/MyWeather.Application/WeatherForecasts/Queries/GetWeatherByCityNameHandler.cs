@@ -9,7 +9,6 @@ public class GetWeatherByCityNameHandler(IWeatherRepository weatherRepository) :
 {
     public async Task<GetWeatherByCityNameResponseDto?> Handle(GetWeatherByCityNameQueryDto request, CancellationToken cancellationToken)
     {
-        // Simulate fetching weather data for the given cityName
         var response = await weatherRepository.GetWeatherByCityNameAsync(request.CityName, cancellationToken);
         return response != null ? new GetWeatherByCityNameResponseDto(
             response.CityId,

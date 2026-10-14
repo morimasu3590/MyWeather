@@ -8,16 +8,15 @@ public class GetCountriesHandler(ICountryRepository countryRepository)
 {
     public async Task<IReadOnlyList<GetCountriesResponseDto>> Handle(GetCountriesQueryDto request, CancellationToken cancellationToken)
     {
-        // Dummy data until countries come from the database
-        var response = await countryRepository.GetAllCountriesAsync(cancellationToken);
-        return response.Count > 0 ?
-                    [
-                        .. response.Select(c => new GetCountriesResponseDto
-                        (
-                            c.Id,
-                            c.Code,
-                            c.Name
-                        ))
-                    ] : [];
+        var countries = await countryRepository.GetAllCountriesAsync(cancellationToken);
+        return
+        [
+            .. countries.Select(c => new GetCountriesResponseDto
+            (
+                c.Id,
+                c.Code,
+                c.Name
+            ))
+        ];
     }
 }
