@@ -9,7 +9,10 @@ public class GetWeatherByCityNameQueryDtoValidatorTests
     [Theory]
     [InlineData("Oslo")]
     [InlineData("New York")]
-    public void Validate_AcceptsCityNamesWithoutDigits(string cityName)
+    [InlineData("Saint-Denis")]
+    [InlineData("St. John's")]
+    [InlineData("Zürich")]
+    public void Validate_AcceptsValidCityNames(string cityName)
     {
         Assert.True(_validator.Validate(new GetWeatherByCityNameQueryDto(cityName)).IsValid);
     }
@@ -17,10 +20,18 @@ public class GetWeatherByCityNameQueryDtoValidatorTests
     [Theory]
     [InlineData("Oslo1")]
     [InlineData("42")]
+    [InlineData("Paris!")]
+    [InlineData("a_b")]
     [InlineData("")]
     [InlineData("   ")]
-    public void Validate_RejectsCityNamesWithDigitsOrBlank(string cityName)
+    public void Validate_RejectsInvalidCityNames(string cityName)
     {
         Assert.False(_validator.Validate(new GetWeatherByCityNameQueryDto(cityName)).IsValid);
+    }
+
+    [Fact]
+    public void Validate_RejectsNullCityNameWithoutThrowing()
+    {
+        Assert.False(_validator.Validate(new GetWeatherByCityNameQueryDto(null!)).IsValid);
     }
 }

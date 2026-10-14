@@ -20,4 +20,11 @@ public class CountryRepository : ICountryRepository
             .OrderBy(c => c.Name)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<Country?> GetCountryByCodeAsync(string countryCode, CancellationToken cancellationToken = default)
+    {
+        return await _context.Countries
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Code == countryCode, cancellationToken);
+    }
 }

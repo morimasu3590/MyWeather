@@ -67,4 +67,29 @@ public class WeatherRepositoryTests : IDisposable
 
         Assert.Equal(EnumCloudiness.HeavyRain, result!.Cloudiness);
     }
+
+    [Fact]
+    public async Task GetWeatherByCityNameAsync_ReadsDatesBackAsUtc()
+    {
+        var local = new DateTime(2026, 5, 6, 7, 8, 9, DateTimeKind.Local);
+        using (var seed = _factory.CreateContext())
+        {
+            var oslo = new City { Name = "Oslo", Country = new Country { Name = "Norway", Code = "NO" } };
+            var bergen = new City { Name = "Bergen", Country = oslo.Country };
+            seed.WeatherRecords.AddRange(
+                NewWeather(oslo, local),
+                NewWeather(bergen, new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Unspecified)));
+            await seed.SaveChangesAsync();
+        }
+
+        using var context = _factory.CreateContext();
+        var repository = new WeatherRepository(context);
+        var fromLocal = await repository.GetWeatherByCityNameAsync("Oslo");
+        var fromUnspecified = await repository.GetWeatherByCityNameAsync("Bergen");
+
+        Assert.Equal(DateTimeKind.Utc, fromLocal!.Date.Kind);
+        Assert.Equal(local.ToUniversalTime(), fromLocal.Date);
+        Assert.Equal(DateTimeKind.Utc, fromUnspecified!.Date.Kind);
+        Assert.Equal(new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc), fromUnspecified.Date);
+    }
 }

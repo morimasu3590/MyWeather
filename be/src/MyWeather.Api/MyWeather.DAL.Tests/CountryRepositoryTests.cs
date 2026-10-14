@@ -36,4 +36,31 @@ public class CountryRepositoryTests : IDisposable
 
         Assert.Empty(result);
     }
+
+    [Fact]
+    public async Task GetCountryByCodeAsync_ReturnsMatchingCountry()
+    {
+        using (var seed = _factory.CreateContext())
+        {
+            seed.Countries.AddRange(
+                new Country { Name = "Norway", Code = "NO" },
+                new Country { Name = "Canada", Code = "CA" });
+            await seed.SaveChangesAsync();
+        }
+
+        using var context = _factory.CreateContext();
+        var result = await new CountryRepository(context).GetCountryByCodeAsync("CA");
+
+        Assert.Equal("Canada", result?.Name);
+    }
+
+    [Fact]
+    public async Task GetCountryByCodeAsync_ReturnsNullForUnknownCode()
+    {
+        using var context = _factory.CreateContext();
+
+        var result = await new CountryRepository(context).GetCountryByCodeAsync("ZZ");
+
+        Assert.Null(result);
+    }
 }
