@@ -28,7 +28,7 @@ public static class InfraConfiguration
         var applicationAssembly = typeof(GetWeatherByCityNameQueryDto).Assembly;
         services.AddValidatorsFromAssembly(applicationAssembly);
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(applicationAssembly));
-        services.AddHttpClient<OpenWeatherMapClient>(client =>
+        services.AddHttpClient<IOpenWeatherMapClient, OpenWeatherMapClient>(client =>
         {
             client.BaseAddress = new Uri("https://api.openweathermap.org");
             client.Timeout = TimeSpan.FromSeconds(10);
