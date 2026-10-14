@@ -11,7 +11,7 @@ public static class MapFavoriteCitiesEndpoints
         var groupBuilder = app.MapGroup("/favorites")
             .WithTags("Favorites");
 
-        groupBuilder.MapGet("/{id}:int",
+        groupBuilder.MapGet("/{id:int}",
             async (ISender sender, [AsParameters] GetFavoriteCityByIdQueryDto query,
                 CancellationToken cancellationToken) =>
             {
