@@ -3,7 +3,7 @@ using MediatR;
 
 namespace MyWeather.Application.WeatherForecasts.Queries;
 
-public record GetWeatherByCityNameQueryDto(string CityName) : IRequest<GetWeatherByCityNameResponseDto?>;
+public record GetWeatherByCityNameQueryDto(string CityName) : IRequest<GetWeatherByCityResponseDto?>;
 
 public class GetWeatherByCityNameQueryDtoValidator : AbstractValidator<GetWeatherByCityNameQueryDto>
 {

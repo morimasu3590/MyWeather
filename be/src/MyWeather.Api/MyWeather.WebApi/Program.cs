@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using MyWeather.DAL;
 using MyWeather.WebApi;
 using Scalar.AspNetCore;
@@ -14,9 +15,9 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    // No migrations yet: create the schema on first run.
+    // Apply pending EF Core migrations. Other environments run `dotnet ef database update` instead.
     using var scope = app.Services.CreateScope();
-    scope.ServiceProvider.GetRequiredService<MyWeatherDbContext>().Database.EnsureCreated();
+    scope.ServiceProvider.GetRequiredService<MyWeatherDbContext>().Database.Migrate();
 }
 
 // Configure the HTTP request pipeline.

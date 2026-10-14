@@ -1,10 +1,10 @@
+using MyWeather.Application.WeatherForecasts.Queries;
 namespace MyWeather.Application.FavoriteCity.Queries;
 
+// The weather of a favorite city, plus the favorite's own id and notes.
 public record GetAllFavoriteCitiesQueryResponseDto(
     int Id,
-    int CityId,
-    string CityName,
-    string CountryCode,
-    string CountryName,
-    string Notes
+    string Notes,
+    GetWeatherByCityResponseDto Weather
 );
+

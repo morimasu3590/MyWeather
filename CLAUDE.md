@@ -21,9 +21,10 @@ dotnet run --project MyWeather.WebApi --launch-profile https   # https://localho
 dotnet watch run --project MyWeather.WebApi --launch-profile https
 dotnet test MyWeather.slnx                                      # no test projects yet
 dotnet test --filter "FullyQualifiedName~SomeTest"              # single test, once tests exist
+dotnet ef migrations add <Name> --project MyWeather.DAL --startup-project MyWeather.WebApi   # after any model change
 ```
 
-`.vscode/` has matching tasks (`build`, `build-webapi`, `watch`, `test`) and an F5 launch config for `MyWeather.WebApi`. The launch config hardcodes `bin/Debug/net10.0`, so update it if the target framework changes. OpenAPI is mapped only in the Development environment.
+`.vscode/` has matching tasks (`build`, `build-webapi`, `watch`, `test`) and an F5 launch config for `MyWeather.WebApi`. The launch config hardcodes `bin/Debug/net10.0`, so update it if the target framework changes. OpenAPI is mapped only in the Development environment. In Development the app applies pending EF migrations on startup (`Database.Migrate()`); other environments run `dotnet ef database update`.
 
 ## Branches
 
