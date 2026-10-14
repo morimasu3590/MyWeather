@@ -3,13 +3,13 @@ using MediatR;
 
 namespace MyWeather.Application.WeatherForecasts.Queries;
 
-public record GetWeatherByCityNameQueryDto(string cityName) : IRequest<GetWeatherByCityNameResponseDto?>;
+public record GetWeatherByCityNameQueryDto(string CityName) : IRequest<GetWeatherByCityNameResponseDto?>;
 
 public class GetWeatherByCityNameQueryDtoValidator : AbstractValidator<GetWeatherByCityNameQueryDto>
 {
     public GetWeatherByCityNameQueryDtoValidator()
     {
-        RuleFor(x => x.cityName).Must(NotContainNumbersOrSpaces).WithMessage("City name cannot contain numbers or special characters.");
+        RuleFor(x => x.CityName).Must(NotContainNumbersOrSpaces).WithMessage("City name cannot contain numbers or special characters.");
     }
 
     private bool NotContainNumbersOrSpaces(string cityName)

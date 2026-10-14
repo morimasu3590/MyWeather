@@ -1,5 +1,7 @@
 <Solution>
+  <Project Path="MyWeather.Application.Tests/MyWeather.Application.Tests.csproj" />
   <Project Path="MyWeather.Application/MyWeather.Application.csproj" />
+  <Project Path="MyWeather.DAL.Tests/MyWeather.DAL.Tests.csproj" />
   <Project Path="MyWeather.DAL/MyWeather.DAL.csproj" />
   <Project Path="MyWeather.Domain/MyWeather.Domain.csproj" />
   <Project Path="MyWeather.Infrastructure/MyWeather.Infrastructure.csproj" />

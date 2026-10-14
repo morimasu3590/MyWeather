@@ -6,13 +6,13 @@ public record GetWeatherByCityNameResponseDto(
     string Country,
     string TimeUtc,
     double WindSpeed,
-    string WindDirection,
-    string Visibility,
+    double WindDirection,
+    double Visibility,
     double Pressure,
     string Cloudiness,
     double TemperatureF,
     double TemperatureC,
-    int Humidity,
-    int DewPoint,
+    double Humidity,
+    double DewPoint,
     string WeatherDescription
 );
