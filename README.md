@@ -4,7 +4,7 @@ get weather data by locations
 ## Description
 
 A User add Favorite Location to track the weather
-[!Weatherboard](weatherboard.png)
+![Weatherboard](weatherboard.png)
 
 ## Run with Docker
 
@@ -31,7 +31,7 @@ How the five backend projects reference each other, placed on the Clean Architec
 
 ## Project references
 
-[!Project references](image.png)
+![Project references](image.png)
 Arrows are `<ProjectReference>` entries, labeled with what crosses the boundary. Teal text marks the interfaces (ports) an inner project defines and an outer project implements. DAL skips the Application ring because its repository interfaces live in Domain. Nothing references WebApi except its test project.
 
 ## What each project holds
@@ -71,4 +71,4 @@ Test projects follow the same shape: `Domain.Tests`, `Application.Tests`, `DAL.T
   **Ports live in two places.** Repository interfaces are in Domain; the weather client interface is in Application. Both are valid, but picking one home makes it clearer where the next port goes.
 
   # Data Model
-  [!Data Model](DataModel.png)
+  ![Data Model](DataModel.png)
