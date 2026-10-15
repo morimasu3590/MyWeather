@@ -21,7 +21,7 @@ docker compose up --build   # add -d to run in the background
 The SQLite database lives in the `myweather-data` Docker volume, so favorites survive `docker compose down`.
 `docker compose down -v` deletes it; the next start recreates and seeds it.
 
-# Architecure Overview
+# Architecture Overview
 
 be/src/MyWeather.Api · MyWeather.slnx · net10.0
 
