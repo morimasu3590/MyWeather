@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using MyWeather.Application.HttpClientWrapper;
 using MyWeather.DAL;
 using MyWeather.Domain;
 using MyWeather.Domain.Model;
@@ -17,6 +18,9 @@ namespace MyWeather.WebApi.Tests.Infrastructure;
 public class SqliteApiFactory : WebApplicationFactory<Program>
 {
     private readonly SqliteConnection _connection = new("Data Source=:memory:");
+
+    // Stands in for OpenWeatherMap, so integration tests never make real HTTP calls.
+    public FakeOpenWeatherMapClient OpenWeatherMap { get; } = new();
 
     public SqliteApiFactory()
     {
@@ -34,6 +38,9 @@ public class SqliteApiFactory : WebApplicationFactory<Program>
             services.RemoveAll<DbContextOptions<MyWeatherDbContext>>();
             services.RemoveAll<IDbContextOptionsConfiguration<MyWeatherDbContext>>();
             services.AddDbContext<MyWeatherDbContext>(options => options.UseSqlite(_connection));
+
+            services.RemoveAll<IOpenWeatherMapClient>();
+            services.AddSingleton<IOpenWeatherMapClient>(OpenWeatherMap);
         });
     }
 

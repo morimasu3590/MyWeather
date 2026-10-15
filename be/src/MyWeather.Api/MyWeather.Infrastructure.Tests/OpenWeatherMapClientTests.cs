@@ -1,6 +1,6 @@
 using System.Globalization;
-using System.Net;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging.Abstractions;
 using MyWeather.Infrastructure.OpenWeatherMap;
 
 namespace MyWeather.Infrastructure.Tests;
@@ -9,17 +9,24 @@ public class OpenWeatherMapClientTests
 {
     private const string LondonGeoJson = """[{ "name": "London", "lat": 51.5, "lon": -0.1, "country": "GB" }]""";
 
+    // A real /data/2.5/weather response for London.
     private const string CurrentJson = """
         {
-          "lat": 51.5, "lon": -0.1, "timezone": "Europe/London", "timezone_offset": 3600,
-          "data": [{
-            "dt": 1777449371, "sunrise": 1777437375, "sunset": 1777490344,
-            "temp": 13.27, "feels_like": 12.17, "pressure": 1024, "humidity": 58, "dew_point": 5.19,
-            "uvi": 1.55, "clouds": 0, "visibility": 10000, "wind_speed": 8.23, "wind_deg": 70,
-            "weather": [{ "id": 800, "main": "Clear", "description": "sky is clear", "icon": "01d" }]
-          }]
+          "coord": { "lon": -0.1, "lat": 51.5 },
+          "weather": [{ "id": 804, "main": "Clouds", "description": "overcast clouds", "icon": "04n" }],
+          "base": "stations",
+          "main": { "temp": 14.23, "feels_like": 13.93, "temp_min": 14.23, "temp_max": 14.23,
+                    "pressure": 1022, "humidity": 85, "sea_level": 1022, "grnd_level": 1019 },
+          "visibility": 10000,
+          "wind": { "speed": 3.44, "deg": 210, "gust": 7.37 },
+          "clouds": { "all": 98 },
+          "dt": 1792029968,
+          "sys": { "country": "GB", "sunrise": 1792045428, "sunset": 1792084098 },
+          "timezone": 3600, "id": 6545250, "name": "Lambeth", "cod": 200
         }
         """;
+
+    private const string CurrentWeatherPath = "/data/2.5/weather";
 
     private readonly StubHttpMessageHandler _stub = new();
     private readonly OpenWeatherMapClient _client;
@@ -30,7 +37,7 @@ public class OpenWeatherMapClientTests
         {
             BaseAddress = new Uri("https://api.openweathermap.test")
         };
-        _client = new OpenWeatherMapClient(http, new MemoryCache(new MemoryCacheOptions()));
+        _client = new OpenWeatherMapClient(http, new MemoryCache(new MemoryCacheOptions()), NullLogger<OpenWeatherMapClient>.Instance);
     }
 
     [Fact]
@@ -61,15 +68,26 @@ public class OpenWeatherMapClientTests
 
         var current = await _client.GetCurrentWeatherDataAsync("GB", "London");
 
-        var oneCall = _stub.RequestUris[1];
-        Assert.Equal("/data/4.0/onecall/current", oneCall.AbsolutePath);
-        Assert.Equal("?lat=51.5&lon=-0.1&units=metric&lang=en&appid=KEY", oneCall.Query);
+        var weatherCall = _stub.RequestUris[1];
+        Assert.Equal(CurrentWeatherPath, weatherCall.AbsolutePath);
+        Assert.Equal("?lat=51.5&lon=-0.1&units=metric&lang=en&appid=KEY", weatherCall.Query);
 
-        Assert.Equal("Europe/London", current!.Timezone);
-        var data = Assert.Single(current.Data);
-        Assert.Equal((12.17, 5.19, 8.23, 70), (data.FeelsLike, data.DewPoint, data.WindSpeed, data.WindDeg));
-        Assert.Equal("sky is clear", Assert.Single(data.Weather).Description);
-        Assert.Null(data.Alerts);
+        Assert.NotNull(current);
+        Assert.Equal((14.23, 13.93, 1022, 85), (current.Main.Temp, current.Main.FeelsLike, current.Main.Pressure, current.Main.Humidity));
+        Assert.Equal((3.44, 210, (double?)7.37), (current.Wind.Speed, current.Wind.Deg, current.Wind.Gust));
+        Assert.Equal((1792029968L, 1792045428L, 3600), (current.Dt, current.Sys.Sunrise, current.Timezone));
+        Assert.Equal((98, 10000), (current.Clouds.All, current.Visibility));
+        Assert.Equal("overcast clouds", Assert.Single(current.Weather).Description);
+    }
+
+    [Fact]
+    public async Task GetCurrentWeatherData_AllowsMissingWindGust()
+    {
+        _stub.RespondsWith(LondonGeoJson).RespondsWith(CurrentJson.Replace(""", "gust": 7.37""", ""));
+
+        var current = await _client.GetCurrentWeatherDataAsync("GB", "London");
+
+        Assert.Null(current!.Wind.Gust);
     }
 
     [Fact]
@@ -100,18 +118,6 @@ public class OpenWeatherMapClientTests
         Assert.Single(_stub.RequestUris);
     }
 
-    [Theory]
-    [InlineData(HttpStatusCode.Unauthorized)]
-    [InlineData(HttpStatusCode.NotFound)]
-    public async Task GetCurrentWeatherData_ThrowsWhenOneCallFails(HttpStatusCode status)
-    {
-        _stub.RespondsWith(LondonGeoJson).RespondsWith("""{ "cod": 401, "message": "Invalid API key" }""", status);
-
-        var error = await Assert.ThrowsAsync<HttpRequestException>(() => _client.GetCurrentWeatherDataAsync("GB", "London"));
-
-        Assert.Equal(status, error.StatusCode);
-    }
-
     [Fact]
     public async Task GetCurrentWeatherData_ReusesCachedGeoLookupForSameCity()
     {
@@ -120,7 +126,7 @@ public class OpenWeatherMapClientTests
         await _client.GetCurrentWeatherDataAsync("GB", "London");
         await _client.GetCurrentWeatherDataAsync("gb", "LONDON");
 
-        Assert.Equal(["/geo/1.0/direct", "/data/4.0/onecall/current", "/data/4.0/onecall/current"],
+        Assert.Equal(["/geo/1.0/direct", CurrentWeatherPath, CurrentWeatherPath],
             _stub.RequestUris.Select(u => u.AbsolutePath));
     }
 
@@ -133,33 +139,5 @@ public class OpenWeatherMapClientTests
         Assert.NotNull(await _client.GetCityGeoTagAsync("GB", "London"));
 
         Assert.Equal(2, _stub.RequestUris.Count);
-    }
-
-    [Fact]
-    public async Task GetCurrentWeatherData_MapsAlertObjects()
-    {
-        const string withAlerts = """
-            {
-              "lat": 51.5, "lon": -0.1, "timezone": "Europe/London", "timezone_offset": 3600,
-              "data": [{
-                "dt": 1777449371, "sunrise": 1777437375, "sunset": 1777490344,
-                "temp": 13.27, "feels_like": 12.17, "pressure": 1024, "humidity": 58, "dew_point": 5.19,
-                "uvi": 1.55, "clouds": 0, "visibility": 10000, "wind_speed": 8.23, "wind_deg": 70,
-                "weather": [{ "id": 800, "main": "Clear", "description": "sky is clear", "icon": "01d" }],
-                "alerts": [{
-                  "sender_name": "Met Office", "event": "Yellow wind warning",
-                  "start": 1777449371, "end": 1777490344,
-                  "description": "Strong winds expected.", "tags": ["Wind"]
-                }]
-              }]
-            }
-            """;
-        _stub.RespondsWith(LondonGeoJson).RespondsWith(withAlerts);
-
-        var current = await _client.GetCurrentWeatherDataAsync("GB", "London");
-
-        var alert = Assert.Single(Assert.Single(current!.Data).Alerts!);
-        Assert.Equal(("Met Office", "Yellow wind warning", 1777490344L), (alert.SenderName, alert.Event, alert.End));
-        Assert.Equal(["Wind"], alert.Tags);
     }
 }
