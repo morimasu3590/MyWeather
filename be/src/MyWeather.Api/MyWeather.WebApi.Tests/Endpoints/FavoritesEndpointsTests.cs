@@ -22,7 +22,8 @@ public class FavoritesEndpointsTests : IDisposable
     [Fact]
     public async Task GetAll_Returns200WithSenderResponse()
     {
-        IReadOnlyList<GetAllFavoriteCitiesQueryResponseDto> favorites = [new(3, "Fjords", OsloWeather)];
+        IReadOnlyList<GetAllFavoriteCitiesQueryResponseDto> favorites =
+            [new(3, 10, "Oslo", "NO", "Norway", "Fjords", OsloWeather), new(4, 20, "Tokyo", "JP", "Japan", "", null)];
         _factory.Sender.Returns<GetAllFavoriteCitiesQueryDto>(favorites);
 
         var response = await _client.GetAsync("/favorites");

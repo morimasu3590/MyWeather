@@ -46,7 +46,22 @@ public class FavoritesIntegrationTests : IDisposable
         var favorites = await _client.GetFromJsonAsync<GetAllFavoriteCitiesQueryResponseDto[]>("/favorites");
 
         var favorite = Assert.Single(favorites!);
-        Assert.Equal(("Museums", "Berlin"), (favorite.Notes, favorite.Weather.CityName));
+        Assert.Equal((berlin.Id, "Berlin", "Museums"), (favorite.CityId, favorite.CityName, favorite.Notes));
+        Assert.Equal(("Berlin", 8.0), (favorite.Weather!.CityName, favorite.Weather.TemperatureC));
+    }
+
+    [Fact]
+    public async Task Create_ThenGetAll_ListsAFavoriteWithoutWeatherYet()
+    {
+        var paris = await _factory.GetCityAsync("Paris");
+
+        await _client.PostAsJsonAsync("/favorites", new { cityId = paris.Id, notes = "" });
+        var favorites = await _client.GetFromJsonAsync<GetAllFavoriteCitiesQueryResponseDto[]>("/favorites");
+
+        var favorite = Assert.Single(favorites!);
+        Assert.Equal((paris.Id, "Paris", "FR", "France"),
+            (favorite.CityId, favorite.CityName, favorite.CountryCode, favorite.CountryName));
+        Assert.Null(favorite.Weather);
     }
 
     [Fact]

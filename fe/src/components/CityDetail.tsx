@@ -59,6 +59,15 @@ export function CityDetail({ views, selected, onSelect, onBack }: CityDetailProp
           <div className="detail-temp">{selected.temperature ?? '—'}</div>
         </div>
 
+        {favorite.notes && (
+          <div className="detail-section">
+            <h6 className="section-label">
+              <span>Notes</span>
+            </h6>
+            <p className="detail-notes">{favorite.notes}</p>
+          </div>
+        )}
+
         <div className="spec-grid">
           {selected.stats.map((stat) => (
             <div key={stat.label} className="spec-cell">

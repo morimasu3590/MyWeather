@@ -41,14 +41,16 @@ public class GetAllFavoriteCitiesHandlerTests
         Assert.Equal(2, result.Count);
         var oslo = result[0];
         Assert.Equal((1, "Fjords"), (oslo.Id, oslo.Notes));
+        Assert.Equal((10, "Oslo", "NO", "Norway"), (oslo.CityId, oslo.CityName, oslo.CountryCode, oslo.CountryName));
+        Assert.NotNull(oslo.Weather);
         Assert.Equal((10, "Oslo", "Norway"), (oslo.Weather.CityId, oslo.Weather.CityName, oslo.Weather.Country));
         Assert.Equal(100, oslo.Weather.TemperatureC);
         Assert.Equal(212, oslo.Weather.TemperatureF);
         Assert.Equal("2026-03-04T12:00:00Z", oslo.Weather.TimeUtc);
         Assert.Equal("PartlyCloudy", oslo.Weather.Cloudiness);
         Assert.Equal((2, "Sushi"), (result[1].Id, result[1].Notes));
-        Assert.Equal((20, "Tokyo"), (result[1].Weather.CityId, result[1].Weather.CityName));
-        Assert.Equal(20, result[1].Weather.TemperatureC);
+        Assert.Equal((20, "Tokyo"), (result[1].Weather!.CityId, result[1].Weather!.CityName));
+        Assert.Equal(20, result[1].Weather!.TemperatureC);
     }
 
     [Fact]
@@ -60,19 +62,23 @@ public class GetAllFavoriteCitiesHandlerTests
 
         var result = await handler.Handle(new GetAllFavoriteCitiesQueryDto(), CancellationToken.None);
 
-        Assert.Equal(9, Assert.Single(result).Weather.TemperatureC);
+        Assert.Equal(9, Assert.Single(result).Weather!.TemperatureC);
     }
 
     [Fact]
-    public async Task Handle_SkipsFavoritesWithoutWeather()
+    public async Task Handle_ListsFavoritesWithoutWeatherWithNullWeather()
     {
         var handler = new GetAllFavoriteCitiesHandler(
-            new FakeFavoriteCityRepository([Favorite(1, Oslo), Favorite(2, Tokyo)]),
+            new FakeFavoriteCityRepository([Favorite(1, Oslo, "Fjords"), Favorite(2, Tokyo)]),
             FakeWeatherRepository.WithWeathers([WeatherOf(1, Tokyo, Noon)]));
 
         var result = await handler.Handle(new GetAllFavoriteCitiesQueryDto(), CancellationToken.None);
 
-        Assert.Equal("Tokyo", Assert.Single(result).Weather.CityName);
+        Assert.Equal(2, result.Count);
+        Assert.Equal((1, 10, "Oslo", "NO", "Norway", "Fjords"),
+            (result[0].Id, result[0].CityId, result[0].CityName, result[0].CountryCode, result[0].CountryName, result[0].Notes));
+        Assert.Null(result[0].Weather);
+        Assert.Equal("Tokyo", result[1].Weather!.CityName);
     }
 
     [Fact]

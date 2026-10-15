@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { TriangleAlert, X } from 'lucide-react'
 import { getCitiesByCountry, getCountries } from '../api/client'
 import type { City, Country } from '../api/types'
-import { MAX_FAVORITES } from '../state/useFavorites'
+import { MAX_FAVORITES, MAX_NOTES_LENGTH } from '../state/useFavorites'
 import { Corners } from './Corners'
 import { SearchSelect } from './SearchSelect'
 
@@ -10,7 +10,8 @@ interface AddCityDialogProps {
   /** City ids already on the dashboard; they can't be picked again. */
   existingCityIds: number[]
   limitReached: boolean
-  onAdd: (city: City) => void
+  /** Notes are trimmed and may be empty. */
+  onAdd: (city: City, notes: string) => void
   onClose: () => void
 }
 
@@ -23,7 +24,9 @@ export function AddCityDialog({ existingCityIds, limitReached, onAdd, onClose }:
   const [countryCode, setCountryCode] = useState<string | null>(null)
   const [cityId, setCityId] = useState<number | null>(null)
   const [openMenu, setOpenMenu] = useState<'country' | 'city' | null>(null)
+  const [notes, setNotes] = useState('')
   const [warn, setWarn] = useState(false)
+  const notesId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
 
   // Focus the dialog on open and give focus back to whatever opened it on close.
@@ -75,7 +78,7 @@ export function AddCityDialog({ existingCityIds, limitReached, onAdd, onClose }:
       setWarn(true)
       return
     }
-    onAdd(city)
+    onAdd(city, notes.trim())
   }
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -154,6 +157,21 @@ export function AddCityDialog({ existingCityIds, limitReached, onAdd, onClose }:
           onOpenChange={(open) => setOpenMenu(open ? 'city' : null)}
           onSelect={pickCity}
         />
+
+        <div className="field">
+          <label htmlFor={notesId}>3 · Notes (optional)</label>
+          <textarea
+            id={notesId}
+            className="input notes-input"
+            placeholder="Why this city? e.g. Visiting in May"
+            maxLength={MAX_NOTES_LENGTH}
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+          />
+          <div className="notes-count text-muted">
+            {`${notes.length} / ${MAX_NOTES_LENGTH}`}
+          </div>
+        </div>
 
         {warn && city && (
           <div role="alert" className="limit-alert">

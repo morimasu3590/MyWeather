@@ -7,7 +7,7 @@ import { AddCityDialog } from './AddCityDialog'
 vi.mock('../api/client', () => ({
   getCountries: vi.fn(async () => countries),
   getCitiesByCountry: vi.fn(async (code: string) => citiesByCountry[code] ?? null),
-  getWeatherByCity: vi.fn(),
+  getFavoriteById: vi.fn(),
 }))
 
 function renderDialog(props: Partial<Parameters<typeof AddCityDialog>[0]> = {}) {
@@ -85,7 +85,26 @@ describe('AddCityDialog', () => {
 
     expect(cityTrigger()).toHaveTextContent('Jakarta')
     await user.click(addButton())
-    expect(onAdd).toHaveBeenCalledWith(citiesByCountry.ID[0])
+    expect(onAdd).toHaveBeenCalledWith(citiesByCountry.ID[0], '')
+  })
+
+  it('adds the city with its notes, trimmed', async () => {
+    const { user, onAdd } = renderDialog()
+
+    await user.click(countryTrigger())
+    await pick(user, 'Indonesia')
+    await pick(user, 'Jakarta')
+    await user.type(screen.getByLabelText('3 · Notes (optional)'), '  Visiting in May  ')
+
+    expect(screen.getByText('19 / 500')).toBeInTheDocument()
+    await user.click(addButton())
+    expect(onAdd).toHaveBeenCalledWith(citiesByCountry.ID[0], 'Visiting in May')
+  })
+
+  it('limits notes to 500 characters', () => {
+    renderDialog()
+
+    expect(screen.getByLabelText('3 · Notes (optional)')).toHaveAttribute('maxLength', '500')
   })
 
   it('warns instead of adding when the limit is reached', async () => {

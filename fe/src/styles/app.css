@@ -18,6 +18,8 @@
 
 /* — page states — */
 .page { padding: 32px 40px 48px; }
+.notice { padding: 20px 40px 0; }
+.notice .banner { margin: 0; }
 .banner {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   margin: 0 0 20px; padding: 12px 14px;
@@ -51,6 +53,12 @@
 .band-remove.btn { color: var(--color-bg); border-color: transparent; width: 32px; height: 32px; }
 .band-remove.btn:hover { background: var(--color-accent-800); }
 
+/* Notes: two lines in the column (full text in the title), all of it in the detail view. */
+.city-notes {
+  margin: 0; padding: 12px 20px 0; font-size: 13px; color: var(--color-neutral-700);
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+  overflow: hidden; overflow-wrap: anywhere;
+}
 .city-now { padding: 24px 20px 18px; display: flex; flex-direction: column; gap: 6px; }
 .big-temp { font-family: var(--font-heading); font-weight: 400; font-size: 132px; line-height: 0.85; letter-spacing: -0.04em; }
 .city-cond { font-family: var(--font-heading); font-weight: 600; font-size: 20px; margin-top: 8px; }
@@ -119,6 +127,7 @@
 
 .detail-cols { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 40px; }
 .detail-cols h6, .detail-section h6 { margin: 0 0 14px; color: var(--color-neutral-700); }
+.detail-notes { margin: 0; font-size: 15px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .hourly { display: grid; grid-template-columns: repeat(8, 1fr); border-left: 1px solid var(--color-divider); }
 .hourly-cell {
   display: flex; flex-direction: column; align-items: center; gap: 6px;
@@ -150,6 +159,8 @@
 .add-dialog-head { display: flex; justify-content: space-between; align-items: center; }
 .add-dialog .dialog-title { font-size: 26px; margin: 0; }
 .add-dialog-intro { margin: -12px 0 0; font-size: 14px; }
+.notes-input { display: block; }
+.notes-count { margin-top: 4px; font-size: 12px; text-align: right; }
 .icon-ghost.btn { color: var(--color-neutral-700); }
 
 .select { position: relative; }
@@ -189,7 +200,7 @@
 
 /* The design is a 1200px desktop frame; below that the grids stack. */
 @media (max-width: 900px) {
-  .app-nav, .page { padding-left: 16px; padding-right: 16px; }
+  .app-nav, .page, .notice { padding-left: 16px; padding-right: 16px; }
   .app-nav { flex-wrap: wrap; }
   .city-grid, .detail, .detail-cols { grid-template-columns: minmax(0, 1fr); }
   .empty-slot { min-height: 220px; }
