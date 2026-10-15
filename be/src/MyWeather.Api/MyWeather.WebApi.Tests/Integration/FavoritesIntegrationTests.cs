@@ -93,6 +93,47 @@ public class FavoritesIntegrationTests : IDisposable
     }
 
     [Fact]
+    public async Task Delete_RemovesTheFavorite()
+    {
+        var berlin = await _factory.GetCityAsync("Berlin");
+        await _factory.AddWeatherAsync(berlin.Id, Noon, 8);
+        var created = await _client.PostAsJsonAsync("/favorites", new { cityId = berlin.Id, notes = "Museums" });
+        var location = created.Headers.Location!;
+
+        var deleted = await _client.DeleteAsync(location);
+
+        Assert.Equal(HttpStatusCode.NoContent, deleted.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _client.GetAsync(location)).StatusCode);
+        Assert.Empty((await _client.GetFromJsonAsync<GetAllFavoriteCitiesQueryResponseDto[]>("/favorites"))!);
+        Assert.Equal(HttpStatusCode.NotFound, (await _client.DeleteAsync(location)).StatusCode); // already gone
+    }
+
+    [Fact]
+    public async Task Delete_Returns404ForUnknownFavorite()
+    {
+        var response = await _client.DeleteAsync("/favorites/999");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Delete_FreesASlotUnderTheThreeFavoritesLimit()
+    {
+        var favorites = new List<int>();
+        foreach (var name in new[] { "Tokyo", "Berlin", "Paris" })
+        {
+            favorites.Add((await _factory.AddFavoriteAsync((await _factory.GetCityAsync(name)).Id)).Id);
+        }
+
+        var deleted = await _client.DeleteAsync($"/favorites/{favorites[0]}");
+        Assert.Equal(HttpStatusCode.NoContent, deleted.StatusCode);
+        var created = await _client.PostAsJsonAsync("/favorites",
+            new { cityId = (await _factory.GetCityAsync("London")).Id, notes = "" });
+
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+    }
+
+    [Fact]
     public async Task GetById_Returns404ForUnknownFavorite()
     {
         var response = await _client.GetAsync("/favorites/999");

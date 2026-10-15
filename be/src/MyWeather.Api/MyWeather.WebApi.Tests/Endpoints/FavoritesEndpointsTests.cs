@@ -96,6 +96,47 @@ public class FavoritesEndpointsTests : IDisposable
     }
 
     [Fact]
+    public async Task Delete_Returns204AndSendsId()
+    {
+        _factory.Sender.Returns<DeleteFavoriteCityCommandDto>(true);
+
+        var response = await _client.DeleteAsync("/favorites/3");
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Empty(await response.Content.ReadAsStringAsync());
+        Assert.Equal(new DeleteFavoriteCityCommandDto(3), Assert.Single(_factory.Sender.Received));
+        Assert.True(_factory.Sender.ReceivedCancellationToken?.CanBeCanceled);
+    }
+
+    [Fact]
+    public async Task Delete_Returns404WhenFavoriteNotFound()
+    {
+        _factory.Sender.Returns<DeleteFavoriteCityCommandDto>(false);
+
+        var response = await _client.DeleteAsync("/favorites/3");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Delete_Returns400ForNonPositiveIdWithoutSending()
+    {
+        var response = await _client.DeleteAsync("/favorites/0");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Empty(_factory.Sender.Received);
+    }
+
+    [Fact]
+    public async Task Delete_NonNumericIdDoesNotMatchRoute()
+    {
+        var response = await _client.DeleteAsync("/favorites/abc");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Empty(_factory.Sender.Received);
+    }
+
+    [Fact]
     public async Task Create_Returns400ForNotesLongerThan500WithoutSending()
     {
         var response = await _client.PostAsJsonAsync("/favorites", new { cityId = 10, notes = new string('a', 501) });

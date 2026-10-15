@@ -30,6 +30,14 @@ public static class MapFavoriteCitiesEndpoints
             var response = await sender.Send(command, cancellationToken);
             return Results.Created($"/favorites/{response.Id}", response);
         }).WithValidationFilter<CreateFavoriteCityCommandDto>();
+
+        groupBuilder.MapDelete("/{id:int}",
+            async (ISender sender, [AsParameters] DeleteFavoriteCityCommandDto command,
+                CancellationToken cancellationToken) =>
+            {
+                var deleted = await sender.Send(command, cancellationToken);
+                return deleted ? Results.NoContent() : Results.NotFound();
+            }).WithValidationFilter<DeleteFavoriteCityCommandDto>();
         return app;
     }
 
