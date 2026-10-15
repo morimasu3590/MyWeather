@@ -26,6 +26,10 @@ dotnet ef migrations add <Name> --project MyWeather.DAL --startup-project MyWeat
 
 `.vscode/` has matching tasks (`build`, `build-webapi`, `watch`, `test`) and an F5 launch config for `MyWeather.WebApi`. The launch config hardcodes `bin/Debug/net10.0`, so update it if the target framework changes. OpenAPI is mapped only in the Development environment. In Development the app applies pending EF migrations on startup (`Database.Migrate()`); other environments run `dotnet ef database update`.
 
+## Docker
+
+`docker compose up --build` from the repo root runs both apps (web on http://localhost:8080, API on http://localhost:5020) and needs `OPENWEATHER_API_KEY` in a root `.env` (copy `.env.example`). The API container runs as Development so migrations apply on startup, and keeps SQLite in the `myweather-data` volume. `be/src/MyWeather.Api/.dockerignore` must keep excluding `**/.env`, since `MyWeather.WebApi/.env` holds the real key.
+
 ## Frontend
 
 Run from `fe/` (Node comes from asdf; if a shell can't find `node`, put `~/.asdf/shims` on PATH, but not ahead of the system `dotnet`):
