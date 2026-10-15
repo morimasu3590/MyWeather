@@ -43,7 +43,7 @@ npm run lint    # oxlint
 ```
 
 - Styling comes only from `src/styles/industry.css` (the design system's tokens and classes, copied verbatim) plus `src/styles/app.css` for layout. Use the `var(--*)` tokens rather than new hex values or fonts.
-- Favorites are kept in browser `localStorage` because the API has no favorites endpoints yet. Hourly, 7-day, high/low, feels-like, air quality and sunrise/sunset are generated placeholders (`src/lib/sample.ts`) shown with a "Sample" tag, since the API returns current conditions only.
+- Favorites are stored by the API: `useFavorites` loads `GET /favorites` (every favorite with its city, `weather` null until a weather row exists) and adds/removes through `POST /favorites` and `DELETE /favorites/{id}`. Duplicate and 3-city limit checks also run client-side because the API answers those with 500 for now. Hourly, 7-day, high/low, feels-like, air quality and sunrise/sunset are generated placeholders (`src/lib/sample.ts`) shown with a "Sample" tag, since the API returns current conditions only.
 
 
 

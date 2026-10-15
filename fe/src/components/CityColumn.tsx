@@ -57,6 +57,12 @@ export function CityColumn({ view, onOpen, onRemove }: CityColumnProps) {
         </div>
       </div>
 
+      {favorite.notes && (
+        <p className="city-notes" title={favorite.notes}>
+          {favorite.notes}
+        </p>
+      )}
+
       <div className="city-now">
         {view.temperature ? (
           <>

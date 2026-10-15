@@ -13,14 +13,14 @@ import { MAX_FAVORITES, useFavorites } from './state/useFavorites'
 import { useWeather } from './state/useWeather'
 
 export default function App() {
-  const { favorites, add, remove, isFull } = useFavorites()
-  const { states, retry } = useWeather(favorites.map((f) => f.cityName))
+  const { favorites, status, reload, add, remove, isFull, actionError, dismissError } = useFavorites()
+  const { states, retry } = useWeather(favorites.map((f) => f.id), reload)
   const [unit, setUnit] = useState<Unit>('C')
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
 
   const views = useMemo(
-    () => favorites.map((f) => buildCityView(f, states[f.cityName], unit)),
+    () => favorites.map((f) => buildCityView(f, states[f.id], unit)),
     [favorites, states, unit],
   )
   const selected = views.find((v) => v.favorite.cityId === selectedId)
@@ -29,12 +29,13 @@ export default function App() {
   const openDialog = () => setDialogOpen(true)
 
   const handleRemove = (cityId: number) => {
-    remove(cityId)
+    void remove(cityId)
     if (selectedId === cityId) setSelectedId(null)
   }
 
-  const handleAdd = (city: City) => {
-    add({ cityId: city.cityId, cityName: city.cityName, countryCode: city.countryCode, countryName: city.countryName })
+  // A failed add closes the dialog too; the error banner says what happened.
+  const handleAdd = async (city: City, notes: string) => {
+    await add(city, notes)
     setDialogOpen(false)
   }
 
@@ -43,7 +44,31 @@ export default function App() {
       <AppHeader count={favorites.length} unit={unit} onUnitChange={setUnit} onAddCity={openDialog} />
 
       <main>
-        {selected ? (
+        {actionError && (
+          <div className="notice">
+            <div className="banner" role="alert">
+              <span>{actionError}</span>
+              <button type="button" className="btn btn-secondary" onClick={dismissError}>
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
+        {status === 'loading' ? (
+          <div className="empty-state">
+            <p className="text-muted">Loading favorite cities…</p>
+          </div>
+        ) : status === 'error' ? (
+          <div className="page">
+            <div className="banner" role="alert">
+              <span>Couldn't load your favorite cities.</span>
+              <button type="button" className="btn btn-secondary" onClick={reload}>
+                <RotateCw size={16} strokeWidth={1.5} aria-hidden="true" />
+                Retry
+              </button>
+            </div>
+          </div>
+        ) : selected ? (
           <CityDetail views={views} selected={selected} onSelect={setSelectedId} onBack={() => setSelectedId(null)} />
         ) : favorites.length === 0 ? (
           <div className="empty-state">

@@ -1,4 +1,7 @@
-import type { City, Country, Weather } from '../api/types'
+import type { City, Country, FavoriteCity, Weather } from '../api/types'
+
+/** A GET /favorites row for a city, without stored weather. */
+export const favorite = (id: number, city: City, notes = ''): FavoriteCity => ({ id, ...city, notes, weather: null })
 
 export const countries: Country[] = [
   { countryId: 1, countryCode: 'ID', countryName: 'Indonesia' },

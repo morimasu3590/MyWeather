@@ -22,15 +22,17 @@ public class GetAllFavoriteCitiesHandler(IFavoriteCityRepository favoriteCityRep
             .GroupBy(w => w.CityId)
             .ToDictionary(g => g.Key, g => g.OrderByDescending(w => w.Date).ThenByDescending(w => w.Id).First());
 
-        // Favorites without a weather record yet are left out.
+        // Every favorite is listed; one without a weather record yet has null weather.
         return
         [
-            .. favoriteCities
-                .Where(fc => latestByCityId.ContainsKey(fc.CityId))
-                .Select(fc => new GetAllFavoriteCitiesQueryResponseDto(
-                    fc.Id,
-                    fc.Notes,
-                    WeatherResponseMapper.ToResponseDto(latestByCityId[fc.CityId])))
+            .. favoriteCities.Select(fc => new GetAllFavoriteCitiesQueryResponseDto(
+                fc.Id,
+                fc.CityId,
+                fc.City.Name,
+                fc.City.Country.Code,
+                fc.City.Country.Name,
+                fc.Notes,
+                latestByCityId.TryGetValue(fc.CityId, out var weather) ? WeatherResponseMapper.ToResponseDto(weather) : null))
         ];
     }
 }
