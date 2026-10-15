@@ -2,41 +2,46 @@ using System.Text.Json.Serialization;
 
 namespace MyWeather.Application.HttpClientWrapper;
 
-// The API uses snake_case, so each property is mapped explicitly. Temperatures are in Kelvin
-// unless the request passes units=metric; dt/sunrise/sunset are Unix seconds (UTC).
+// Response of the free Current Weather API (GET /data/2.5/weather). The API uses snake_case, so each
+// property is mapped explicitly. Values are metric when the request passes units=metric; dt, sunrise
+// and sunset are Unix seconds (UTC). Name is the nearest station area, not necessarily the requested city.
 public record OpenWeatherMapCurrentResponseDto(
-    [property: JsonPropertyName("lat")] decimal Lat,
-    [property: JsonPropertyName("lon")] decimal Lon,
-    [property: JsonPropertyName("timezone")] string Timezone,
-    [property: JsonPropertyName("timezone_offset")] int TimezoneOffset,
-    [property: JsonPropertyName("data")] IReadOnlyList<OpenWeatherMapCurrentDataDto> Data);
-
-public record OpenWeatherMapCurrentDataDto(
+    [property: JsonPropertyName("coord")] OpenWeatherMapCoordDto Coord,
+    [property: JsonPropertyName("weather")] IReadOnlyList<OpenWeatherMapWeatherConditionDto> Weather,
+    [property: JsonPropertyName("main")] OpenWeatherMapMainDto Main,
+    [property: JsonPropertyName("visibility")] int Visibility,
+    [property: JsonPropertyName("wind")] OpenWeatherMapWindDto Wind,
+    [property: JsonPropertyName("clouds")] OpenWeatherMapCloudsDto Clouds,
     [property: JsonPropertyName("dt")] long Dt,
-    [property: JsonPropertyName("sunrise")] long Sunrise,
-    [property: JsonPropertyName("sunset")] long Sunset,
+    [property: JsonPropertyName("sys")] OpenWeatherMapSysDto Sys,
+    [property: JsonPropertyName("timezone")] int Timezone,
+    [property: JsonPropertyName("name")] string Name);
+
+public record OpenWeatherMapCoordDto(
+    [property: JsonPropertyName("lon")] decimal Lon,
+    [property: JsonPropertyName("lat")] decimal Lat);
+
+public record OpenWeatherMapMainDto(
     [property: JsonPropertyName("temp")] double Temp,
     [property: JsonPropertyName("feels_like")] double FeelsLike,
+    [property: JsonPropertyName("temp_min")] double TempMin,
+    [property: JsonPropertyName("temp_max")] double TempMax,
     [property: JsonPropertyName("pressure")] int Pressure,
-    [property: JsonPropertyName("humidity")] int Humidity,
-    [property: JsonPropertyName("dew_point")] double DewPoint,
-    [property: JsonPropertyName("uvi")] double Uvi,
-    [property: JsonPropertyName("clouds")] int Clouds,
-    [property: JsonPropertyName("visibility")] int Visibility,
-    [property: JsonPropertyName("wind_speed")] double WindSpeed,
-    [property: JsonPropertyName("wind_deg")] int WindDeg,
-    [property: JsonPropertyName("weather")] IReadOnlyList<OpenWeatherMapWeatherConditionDto> Weather,
-    // Absent when there are no active alerts.
-    [property: JsonPropertyName("alerts")] IReadOnlyList<OpenWeatherMapAlertDto>? Alerts);
+    [property: JsonPropertyName("humidity")] int Humidity);
 
-// A national weather alert; start and end are Unix seconds (UTC).
-public record OpenWeatherMapAlertDto(
-    [property: JsonPropertyName("sender_name")] string SenderName,
-    [property: JsonPropertyName("event")] string Event,
-    [property: JsonPropertyName("start")] long Start,
-    [property: JsonPropertyName("end")] long End,
-    [property: JsonPropertyName("description")] string Description,
-    [property: JsonPropertyName("tags")] IReadOnlyList<string> Tags);
+public record OpenWeatherMapWindDto(
+    [property: JsonPropertyName("speed")] double Speed,
+    [property: JsonPropertyName("deg")] int Deg,
+    // Often absent in calm conditions.
+    [property: JsonPropertyName("gust")] double? Gust);
+
+public record OpenWeatherMapCloudsDto(
+    [property: JsonPropertyName("all")] int All);
+
+public record OpenWeatherMapSysDto(
+    [property: JsonPropertyName("country")] string Country,
+    [property: JsonPropertyName("sunrise")] long Sunrise,
+    [property: JsonPropertyName("sunset")] long Sunset);
 
 public record OpenWeatherMapWeatherConditionDto(
     [property: JsonPropertyName("id")] int Id,

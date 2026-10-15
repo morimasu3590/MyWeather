@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using MyWeather.Application.FavoriteCity.Commands;
 using MyWeather.Application.FavoriteCity.Queries;
+using MyWeather.Application.HttpClientWrapper;
 using MyWeather.WebApi.Tests.Infrastructure;
 
 namespace MyWeather.WebApi.Tests.Integration;
@@ -22,7 +23,7 @@ public class FavoritesIntegrationTests : IDisposable
     public async Task Create_ThenFollowLocation_ReturnsFavoriteWithNotesAndWeather()
     {
         var tokyo = await _factory.GetCityAsync("Tokyo");
-        await _factory.AddWeatherAsync(tokyo.Id, Noon, 20);
+        _factory.OpenWeatherMap.SetCurrentWeather("Tokyo", 20);
 
         var created = await _client.PostAsJsonAsync("/favorites", new { cityId = tokyo.Id, notes = "Sushi" });
 
@@ -49,29 +50,45 @@ public class FavoritesIntegrationTests : IDisposable
     }
 
     [Fact]
-    public async Task GetById_ReturnsWeatherOfTheFavoritesCityNotOfTheCityWithTheFavoritesId()
+    public async Task GetById_AsksOpenWeatherMapForTheFavoritesCityNotTheCityWithTheFavoritesId()
     {
-        // Seeded city ids start at 1, so this favorite (id 1) differs from Tokyo's city id.
-        var jakarta = await _factory.GetCityAsync("Jakarta");
+        // Seeded city ids start at 1, so this favorite (id 1) shares an id with Jakarta, not with Tokyo.
         var tokyo = await _factory.GetCityAsync("Tokyo");
-        await _factory.AddWeatherAsync(jakarta.Id, Noon, 31);
-        await _factory.AddWeatherAsync(tokyo.Id, Noon, 20);
+        _factory.OpenWeatherMap.SetCurrentWeather("Jakarta", 31);
+        _factory.OpenWeatherMap.SetCurrentWeather("Tokyo", 20);
         var favorite = await _factory.AddFavoriteAsync(tokyo.Id, "Sushi");
         Assert.NotEqual(tokyo.Id, favorite.Id);
 
         var result = await _client.GetFromJsonAsync<GetFavoriteCityByIdResponseDto>($"/favorites/{favorite.Id}");
 
-        Assert.Equal(("Tokyo", 20.0), (result!.Weather!.CityName, result.Weather.TemperatureC));
+        Assert.Equal((tokyo.Id, "Tokyo", "Japan", 20.0),
+            (result!.Weather!.CityId, result.Weather.CityName, result.Weather.Country, result.Weather.TemperatureC));
+        Assert.Equal(("JP", "Tokyo"), Assert.Single(_factory.OpenWeatherMap.Requested));
     }
 
     [Fact]
-    public async Task GetById_ReturnsFavoriteWithoutWeatherWhenCityHasNone()
+    public async Task GetById_ReturnsFavoriteWithoutWeatherWhenOpenWeatherMapHasNone()
     {
         var favorite = await _factory.AddFavoriteAsync((await _factory.GetCityAsync("Paris")).Id, "Croissants");
 
         var result = await _client.GetFromJsonAsync<GetFavoriteCityByIdResponseDto>($"/favorites/{favorite.Id}");
 
         Assert.Equal("Croissants", result!.Notes);
+        Assert.Null(result.Weather);
+    }
+
+    [Fact]
+    public async Task GetById_Returns200WithoutWeatherWhenOpenWeatherMapFails()
+    {
+        var favorite = await _factory.AddFavoriteAsync((await _factory.GetCityAsync("Tokyo")).Id, "Sushi");
+        _factory.OpenWeatherMap.FailWith("Tokyo", new WeatherProviderException("OpenWeatherMap current weather failed.",
+            new HttpRequestException("Too Many Requests"), HttpStatusCode.TooManyRequests));
+
+        var response = await _client.GetAsync($"/favorites/{favorite.Id}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<GetFavoriteCityByIdResponseDto>();
+        Assert.Equal((favorite.Id, "Sushi"), (result!.Id, result.Notes));
         Assert.Null(result.Weather);
     }
 
