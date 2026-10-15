@@ -31,4 +31,12 @@ public class FavoriteCityRepository(MyWeatherDbContext context) : IFavoriteCityR
         await context.SaveChangesAsync(cancellationToken);
         return favoriteCity.Id;
     }
+
+    public async Task<bool> DeleteFavoriteCityAsync(int id, CancellationToken cancellationToken = default)
+    {
+        // A single DELETE statement; only the favorite row goes, its city and weather stay.
+        return await context.FavoriteCities
+            .Where(fc => fc.Id == id)
+            .ExecuteDeleteAsync(cancellationToken) > 0;
+    }
 }

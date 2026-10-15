@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using MyWeather.DAL.Repositories;
+using MyWeather.Domain;
 using MyWeather.Domain.Model;
 
 namespace MyWeather.DAL.Tests;
@@ -96,6 +98,46 @@ public class FavoriteCityRepositoryTests : IDisposable
         using var context = _factory.CreateContext();
 
         Assert.Null(await new FavoriteCityRepository(context).GetById(999));
+    }
+
+    [Fact]
+    public async Task DeleteFavoriteCityAsync_DeletesOnlyThatFavoriteAndKeepsItsCityAndWeather()
+    {
+        int osloFavoriteId;
+        using (var seed = _factory.CreateContext())
+        {
+            var oslo = new FavoriteCity { Notes = "first", City = new City { Name = "Oslo", Country = new Country { Name = "Norway", Code = "NO" } } };
+            var tokyo = new FavoriteCity { Notes = "second", City = new City { Name = "Tokyo", Country = new Country { Name = "Japan", Code = "JP" } } };
+            seed.FavoriteCities.AddRange(oslo, tokyo);
+            seed.WeatherRecords.Add(new Weather
+            {
+                City = oslo.City, Date = new DateTime(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc),
+                TemperatureInC = 3, Cloudiness = EnumCloudiness.Overcast
+            });
+            await seed.SaveChangesAsync();
+            osloFavoriteId = oslo.Id;
+        }
+
+        bool deleted;
+        using (var context = _factory.CreateContext())
+        {
+            deleted = await new FavoriteCityRepository(context).DeleteFavoriteCityAsync(osloFavoriteId);
+        }
+
+        Assert.True(deleted);
+        using var verify = _factory.CreateContext();
+        var remaining = Assert.Single(await new FavoriteCityRepository(verify).GetAllFavoriteCitiesAsync());
+        Assert.Equal("Tokyo", remaining.City.Name);
+        Assert.True(await verify.Cities.AnyAsync(c => c.Name == "Oslo"));
+        Assert.True(await verify.WeatherRecords.AnyAsync(w => w.City.Name == "Oslo"));
+    }
+
+    [Fact]
+    public async Task DeleteFavoriteCityAsync_ReturnsFalseWhenFavoriteDoesNotExist()
+    {
+        using var context = _factory.CreateContext();
+
+        Assert.False(await new FavoriteCityRepository(context).DeleteFavoriteCityAsync(999));
     }
 
     [Fact]
