@@ -1,0 +1,15 @@
+# Build output is produced inside the image.
+**/bin
+**/obj
+
+# Secrets and local data must never be copied into an image:
+# MyWeather.WebApi/.env holds the real OpenWeatherMap key; the container gets it from docker-compose.
+**/.env
+**/*.db
+**/*.db-*
+
+# Not needed to run the API.
+*.Tests/
+**/.vs
+**/.idea
+**/*.user

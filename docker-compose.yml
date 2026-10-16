@@ -1,0 +1,29 @@
+# Runs MyWeather locally: `docker compose up --build`, then open http://localhost:8080.
+# Needs OPENWEATHER_API_KEY in a .env file next to this one (copy .env.example).
+
+services:
+  api:
+    build: ./be/src/MyWeather.Api
+    environment:
+      # Development applies the EF Core migrations on startup (creating the SQLite schema and seed data)
+      # and serves the Scalar API docs at http://localhost:5020/docs.
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Data Source=/data/myweather.db
+      OpenWeather__ApiKey: ${OPENWEATHER_API_KEY:?Set OPENWEATHER_API_KEY in .env (see .env.example)}
+    volumes:
+      - myweather-data:/data
+    ports:
+      - "5020:8080"
+    restart: unless-stopped
+
+  web:
+    build: ./fe
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  # The SQLite database; survives `docker compose down`. `docker compose down -v` resets it.
+  myweather-data:
