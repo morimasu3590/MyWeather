@@ -58,3 +58,6 @@ nunit-*.xml
 
 # SQLite database
 myweather.db*
+
+# macOS Finder metadata
+.DS_Store
